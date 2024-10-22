@@ -47,13 +47,58 @@
 		maxZoom: 19,
         tileSize: L.point(3840,2160)
 	}).addTo(map);
-	// const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	// 	maxZoom: 19,
-	// 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-	// }).addTo(map);
+
+    var LeafIcon = L.Icon.extend({ options: {}});
+    var starIcon = new LeafIcon({
+        iconUrl: "default_star.png"
+    })
+
+    const selectedMarkers = [];
+    function onMarkerClick(e) {
+        const marker = e.target;
+        if (selectedMarkers.length < 2) {
+            selectedMarkers.push(marker);
+        }
+        if (selectedMarkers.length === 2) {
+            // Perform action with the two selected markers
+            const latlngs = selectedMarkers.map(m => m.getLatLng());
+            L.polyline(latlngs, { color: 'red' }).addTo(map).bindPopup("<b>Distance: </b> " + map.distance(latlngs[0], latlngs[1])).openPopup();
+
+            // Clear selection
+            selectedMarkers.forEach(m => m.setIcon(L.icon({ iconUrl: 'default_star.png' })));
+            selectedMarkers.length = 0;
+        }
+    }
     
 	const marker = L.marker([51.5, -0.09]).addTo(map)
 		.bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    var latlngs = Array();
+    
+    const marker2 = L.marker([30.5, -1.09], {icon: starIcon}).addTo(map)
+    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    const marker3 = L.marker([200.5, .5], {icon: starIcon}).addTo(map)
+    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    const marker4 = L.marker([20.5, -1.5], {icon: starIcon}).addTo(map)
+    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    const marker5 = L.marker([0.5, 1.09], {icon: starIcon}).addTo(map)
+    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    const marker6 = L.marker([45.5, 1.09], {icon: starIcon}).addTo(map)
+    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    const marker7 = L.marker([0, 0], {icon: starIcon}).addTo(map)
+    .bindPopup('<b>The Galactic Center</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+
+    marker2.on('click', onMarkerClick);
+    marker3.on('click', onMarkerClick);
+    marker4.on('click', onMarkerClick);
+    marker5.on('click', onMarkerClick);
+    marker6.on('click', onMarkerClick);
+    marker7.on('click', onMarkerClick);
 
 	const circle = L.circle([51.508, -0.11], {
 		color: 'red',
@@ -73,7 +118,15 @@
 		.setContent('I am a standalone popup.')
 		.openOn(map);
 
-    // const background = L.imageOverlay("background.png", [[30,60], [-30,30]])
+    // map.on('zoomend', function() {
+    //     var currentZoom = map.getZoom();
+    //     //Update X and Y based on zoom level
+    //     var x= 2; //Update x 
+    //     var y= 2; //Update Y         
+    //     starIcon.iconSize = [x * currentZoom, y * currentZoom];
+    //     marker2.setIcon(starIcon);
+    // });
+
 
 	function onMapClick(e) {
 		// popup
