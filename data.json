@@ -1,0 +1,38 @@
+[
+    {
+      "System": "The Galactic Center",
+      "x": 0,
+      "y": 0,
+      "Map": "default_star.png"
+    }, 
+    {
+        "System": "The Galactic Left",
+        "x": -125,
+        "y": 0,
+        "Map": "default_star.png"
+    }, 
+    {
+        "System": "The Galactic Right",
+        "x": 125,
+        "y": 0,
+        "Map": "default_star.png"
+    }, 
+    {
+        "System": "The Galactic Top",
+        "x": 0,
+        "y": 50,
+        "Map": "default_star.png"
+    },
+    {
+        "System": "The Galactic Bottom",
+        "x": 0,
+        "y": -50,
+        "Map": "default_star.png"
+    },
+    {
+        "System": "Raxxla",
+        "x": 20,
+        "y": 20,
+        "Map": "default_star.png"
+    } 
+]

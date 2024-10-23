@@ -8,9 +8,11 @@
 	<title>Spelljammer - System Map</title>
 	
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
-
+    <link rel="stylesheet" href="leaflet/leaflet.css">
+    <script src="leaflet/leaflet.js"></script>
+<!-- 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> -->
 
 	<style>
         @font-face {
@@ -21,13 +23,27 @@
 			height: 100%;
 			margin: 0;
             background-color: #121212;
+            display: flex;
+            flex-direction: column;
 		}
 		.leaflet-container {
-			height: 400px;
-			width: 600px;
-			max-width: 100%;
-			max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
 		}
+        #map {
+            width: 100%; 
+            height: 100%; 
+            margin-left: auto; margin-right: auto;
+            flex: 1;
+        }
+        .div-icon {
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 2px;
+            text-align: center;
+            color: rgba(255, 255, 255, .6);
+        }
 	</style>
 
 	
@@ -36,21 +52,32 @@
 
 
 <div>
-    <h1 style="color: white; text-align: center; font-family: Copperplate Gothic;">Spelljammer - Astral Plane System Map</h1>
+    <h1 style="color: white; text-align: center; font-family: Copperplate Gothic; flex: 0 0 10%;">Spelljammer - Astral Plane System Map</h1>
 </div>
-<div id="map" style="width: 600px; height: 400px; margin-left: auto; margin-right: auto;"></div>
+<div id="map" ></div>
 <script>
+    fetch("data.json")
+    .then(response => response.json())
+    .then(json => console.log(json));
 
 	const map = L.map('map').setView([51.505, -0.09], 13);
 
 	const tiles = L.tileLayer('background.png', {
 		maxZoom: 19,
-        tileSize: L.point(3840,2160)
+        tileSize: L.point(3840,2160),
+        noWrap: true
 	}).addTo(map);
 
     var LeafIcon = L.Icon.extend({ options: {}});
     var starIcon = new LeafIcon({
-        iconUrl: "default_star.png"
+        iconUrl: "default_star.png",
+        iconAnchor: [16,16]
+    })
+    var textIcon = L.divIcon({
+        className: 'div-icon',
+        html: '<b>Galactic Center</b>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 0]
     })
 
     const selectedMarkers = [];
@@ -62,7 +89,11 @@
         if (selectedMarkers.length === 2) {
             // Perform action with the two selected markers
             const latlngs = selectedMarkers.map(m => m.getLatLng());
-            L.polyline(latlngs, { color: 'red' }).addTo(map).bindPopup("<b>Distance: </b> " + map.distance(latlngs[0], latlngs[1])).openPopup();
+            const distance = Math.sqrt(
+                    Math.pow(latlngs[0].lat - latlngs[1].lat, 2) +
+                    Math.pow(latlngs[0].lng - latlngs[1].lng, 2)).toFixed(0);
+            L.polyline(latlngs, { color: 'red' }).addTo(map);
+            L.polyline(latlngs, { color: 'transparent', weight: 5 }).addTo(map).bindTooltip("<b>Distance: </b> " + distance).openTooltip();
 
             // Clear selection
             selectedMarkers.forEach(m => m.setIcon(L.icon({ iconUrl: 'default_star.png' })));
@@ -70,13 +101,11 @@
         }
     }
     
-	const marker = L.marker([51.5, -0.09]).addTo(map)
-		.bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+	const marker = L.marker([51.5, -0.09], {draggable: true}).addTo(map)
+		.bindPopup('You are <b>here.</b>').openPopup();
 
-    var latlngs = Array();
-    
-    const marker2 = L.marker([30.5, -1.09], {icon: starIcon}).addTo(map)
-    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+    const marker2 = L.marker([30.5, -1.09], {icon: starIcon}).addTo(map).bindTooltip('<b>Sol</b>').openTooltip()
+    .bindPopup('<b>Sol: </b><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
 
     const marker3 = L.marker([200.5, .5], {icon: starIcon}).addTo(map)
     .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
@@ -84,14 +113,15 @@
     const marker4 = L.marker([20.5, -1.5], {icon: starIcon}).addTo(map)
     .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
 
-    const marker5 = L.marker([0.5, 1.09], {icon: starIcon}).addTo(map)
+    const marker5 = L.marker([4, 0], {icon: starIcon}).addTo(map)
     .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
 
-    const marker6 = L.marker([45.5, 1.09], {icon: starIcon}).addTo(map)
+    const marker6 = L.marker([0, 3], {icon: starIcon}).addTo(map)
     .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
 
     const marker7 = L.marker([0, 0], {icon: starIcon}).addTo(map)
     .bindPopup('<b>The Galactic Center</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
+    const marker7text = L.marker([0, 0], {icon: textIcon}).addTo(map)
 
     marker2.on('click', onMarkerClick);
     marker3.on('click', onMarkerClick);
@@ -120,12 +150,8 @@
 
     // map.on('zoomend', function() {
     //     var currentZoom = map.getZoom();
-    //     //Update X and Y based on zoom level
-    //     var x= 2; //Update x 
-    //     var y= 2; //Update Y         
-    //     starIcon.iconSize = [x * currentZoom, y * currentZoom];
-    //     marker2.setIcon(starIcon);
     // });
+
 
 
 	function onMapClick(e) {
@@ -133,7 +159,7 @@
 		// 	.setLatLng(e.latlng)
 		// 	.setContent(`You clicked the map at ${e.latlng.toString()}`)
 		// 	.openOn(map);
-        marker.setLatLng(e.latlng)
+        // marker.setLatLng(e.latlng)
 	}
 
 	map.on('click', onMapClick);
