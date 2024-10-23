@@ -10,9 +10,6 @@
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <link rel="stylesheet" href="leaflet/leaflet.css">
     <script src="leaflet/leaflet.js"></script>
-<!-- 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script> -->
 
 	<style>
         @font-face {
@@ -56,11 +53,9 @@
 </div>
 <div id="map" ></div>
 <script>
-    fetch("data.json")
-    .then(response => response.json())
-    .then(json => console.log(json));
-
-	const map = L.map('map').setView([51.505, -0.09], 13);
+	const map = L.map('map').setView([0, 0], 13);
+    map.setMinZoom(4);
+    map.setMaxZoom(10);
 
 	const tiles = L.tileLayer('background.png', {
 		maxZoom: 19,
@@ -72,12 +67,6 @@
     var starIcon = new LeafIcon({
         iconUrl: "default_star.png",
         iconAnchor: [16,16]
-    })
-    var textIcon = L.divIcon({
-        className: 'div-icon',
-        html: '<b>Galactic Center</b>',
-        iconSize: [40, 40],
-        iconAnchor: [20, 0]
     })
 
     const selectedMarkers = [];
@@ -93,80 +82,66 @@
                     Math.pow(latlngs[0].lat - latlngs[1].lat, 2) +
                     Math.pow(latlngs[0].lng - latlngs[1].lng, 2)).toFixed(0);
             L.polyline(latlngs, { color: 'red' }).addTo(map);
-            L.polyline(latlngs, { color: 'transparent', weight: 5 }).addTo(map).bindTooltip("<b>Distance: </b> " + distance).openTooltip();
+            L.polyline(latlngs, { color: 'transparent', weight: 5 }).addTo(map).bindTooltip("<b>Distance: </b> " + distance + " LY").openTooltip();
 
             // Clear selection
             selectedMarkers.forEach(m => m.setIcon(L.icon({ iconUrl: 'default_star.png' })));
             selectedMarkers.length = 0;
         }
     }
+
+    async function retrieveStarData(file) {
+        const response = await fetch(file);
+        const json = await response.json();
+        for (var i = 0; i < json.length; i++) {
+            var star = json[i];
+            const marker = L.marker([star.y, star.x], {icon: starIcon}).addTo(map);
+            if (star.System != "") {
+                if (star.Map == "") {
+                marker.bindPopup('<b>'+ star.System + '</b><br />');//.openPopup();
+                } else {
+                    marker.bindPopup('<b>'+ star.System + '</b><br /><a href=' + star.Map + ' target="_blank">Open System Map</a>.');//.openPopup();
+                }
+                var textIcon = L.divIcon({
+                    className: 'div-icon',
+                    html: '<b>' + star.System + '</b>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 0]
+                })
+                const markerText = L.marker([star.y, star.x], {icon: textIcon}).addTo(map)
+            } else {
+                marker.bindPopup('<b>Uncharted</b><br />' + "(" + star.x + ", " + star.y + ")");//.openPopup();
+            }
+            marker.on('click', onMarkerClick);
+        }
+    }
     
-	const marker = L.marker([51.5, -0.09], {draggable: true}).addTo(map)
+	const you = L.marker([0, 0], {draggable: true}).addTo(map)
 		.bindPopup('You are <b>here.</b>').openPopup();
 
-    const marker2 = L.marker([30.5, -1.09], {icon: starIcon}).addTo(map).bindTooltip('<b>Sol</b>').openTooltip()
-    .bindPopup('<b>Sol: </b><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
-
-    const marker3 = L.marker([200.5, .5], {icon: starIcon}).addTo(map)
-    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
-
-    const marker4 = L.marker([20.5, -1.5], {icon: starIcon}).addTo(map)
-    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
-
-    const marker5 = L.marker([4, 0], {icon: starIcon}).addTo(map)
-    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
-
-    const marker6 = L.marker([0, 3], {icon: starIcon}).addTo(map)
-    .bindPopup('<b>Raxxla</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
-
-    const marker7 = L.marker([0, 0], {icon: starIcon}).addTo(map)
-    .bindPopup('<b>The Galactic Center</b><br /><a href="default_star.png" target="_blank">Open System Map</a>.').openPopup();
-    const marker7text = L.marker([0, 0], {icon: textIcon}).addTo(map)
-
-    marker2.on('click', onMarkerClick);
-    marker3.on('click', onMarkerClick);
-    marker4.on('click', onMarkerClick);
-    marker5.on('click', onMarkerClick);
-    marker6.on('click', onMarkerClick);
-    marker7.on('click', onMarkerClick);
-
-	const circle = L.circle([51.508, -0.11], {
-		color: 'red',
-		fillColor: '#f03',
-		fillOpacity: 0.5,
-		radius: 500
-	}).addTo(map).bindPopup('I am a circle.');
-
-	const polygon = L.polygon([
-		[51.509, -0.08],
-		[51.503, -0.06],
-		[51.51, -0.047]
-	]).addTo(map).bindPopup('I am a polygon.');
-
-	const popup = L.popup()
-		.setLatLng([51.513, -0.09])
-		.setContent('I am a standalone popup.')
-		.openOn(map);
+    orbit_bounds = [[-57.5,-140], [52.5,140]]
+    L.imageOverlay("orbit_lines.png", orbit_bounds).addTo(map);
 
     // map.on('zoomend', function() {
     //     var currentZoom = map.getZoom();
+    //     console.log(currentZoom);
     // });
 
+	// const popup = L.popup()
+	// 	.setLatLng([0,0])
 
+	// function onMapClick(e) {
+	// 	popup
+	// 		.setLatLng(e.latlng)
+	// 		.setContent("(" + e.latlng.lat.toFixed(0) + ", " + e.latlng.lng.toFixed(0) + ")")
+	// 		.openOn(map);
+    //     // marker.setLatLng(e.latlng)
+	// }
 
-	function onMapClick(e) {
-		// popup
-		// 	.setLatLng(e.latlng)
-		// 	.setContent(`You clicked the map at ${e.latlng.toString()}`)
-		// 	.openOn(map);
-        // marker.setLatLng(e.latlng)
-	}
-
-	map.on('click', onMapClick);
+	// map.on('click', onMapClick);
+    retrieveStarData("data.json");
+    retrieveStarData("customSystems.json");
 
 </script>
-
-
-
 </body>
 </html>
