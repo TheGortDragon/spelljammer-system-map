@@ -28,6 +28,11 @@
             flex-direction: column;
             height: 100%;
 		}
+        .leaflet-container img.leaflet-tile {
+            mix-blend-mode: normal;
+            width: 3840px !important;
+            height: 2160px !important;
+        }
         #map {
             width: 100%; 
             height: 100%; 
@@ -39,7 +44,14 @@
             border: 1px solid transparent;
             padding: 2px;
             text-align: center;
-            color: rgba(255, 255, 255, .6);
+            color: rgba(0, 0, 0, 0.6);
+        }
+        .div-icon-custom {
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 2px;
+            text-align: center;
+            color: rgba(0, 255, 255, 0.6);
         }
 	</style>
 
@@ -53,11 +65,14 @@
 </div>
 <div id="map" ></div>
 <script>
-	const map = L.map('map').setView([0, 0], 13);
+
+    const START_LOC = {"x": -20, "y": 20}
+
+	const map = L.map('map').setView([START_LOC.y, START_LOC.x], 13);
     map.setMinZoom(4);
     map.setMaxZoom(10);
 
-	const tiles = L.tileLayer('background.png', {
+	const tiles = L.tileLayer('background2.png', {
 		maxZoom: 19,
         tileSize: L.point(3840,2160),
         noWrap: true
@@ -65,7 +80,7 @@
 
     var LeafIcon = L.Icon.extend({ options: {}});
     var starIcon = new LeafIcon({
-        iconUrl: "default_star.png",
+        iconUrl: "default_star2.png",
         iconAnchor: [16,16]
     })
 
@@ -85,12 +100,11 @@
             L.polyline(latlngs, { color: 'transparent', weight: 5 }).addTo(map).bindTooltip("<b>Distance: </b> " + distance + " LY").openTooltip();
 
             // Clear selection
-            selectedMarkers.forEach(m => m.setIcon(L.icon({ iconUrl: 'default_star.png' })));
             selectedMarkers.length = 0;
         }
     }
 
-    async function retrieveStarData(file) {
+    async function retrieveStarData(file, iconType) {
         const response = await fetch(file);
         const json = await response.json();
         for (var i = 0; i < json.length; i++) {
@@ -98,49 +112,32 @@
             const marker = L.marker([star.y, star.x], {icon: starIcon}).addTo(map);
             if (star.System != "") {
                 if (star.Map == "") {
-                marker.bindPopup('<b>'+ star.System + '</b><br />');//.openPopup();
+                marker.bindPopup('<b>'+ star.System + '</b><br />' + "(" + star.x.toFixed(0) + ", " + star.y.toFixed(0) + ")");
                 } else {
-                    marker.bindPopup('<b>'+ star.System + '</b><br /><a href=' + star.Map + ' target="_blank">Open System Map</a>.');//.openPopup();
+                    marker.bindPopup('<b>'+ star.System + '</b><br /><a href=' + star.Map + ' target="_blank">Open System Map</a>.');
                 }
                 var textIcon = L.divIcon({
-                    className: 'div-icon',
+                    className: iconType,
                     html: '<b>' + star.System + '</b>',
                     iconSize: [40, 40],
                     iconAnchor: [20, 0]
                 })
-                const markerText = L.marker([star.y, star.x], {icon: textIcon}).addTo(map)
+                const markerText = L.marker([star.y, star.x], {icon: textIcon, riseOnHover: true}).addTo(map)
             } else {
-                marker.bindPopup('<b>Uncharted</b><br />' + "(" + star.x + ", " + star.y + ")");//.openPopup();
+                marker.bindPopup('<b>Uncharted</b><br />' + "(" + star.x + ", " + star.y + ")");
             }
             marker.on('click', onMarkerClick);
         }
     }
     
-	const you = L.marker([0, 0], {draggable: true}).addTo(map)
+	const you = L.marker([START_LOC.y, START_LOC.x], {draggable: true, riseOnHover: true}).addTo(map)
 		.bindPopup('You are <b>here.</b>').openPopup();
 
     orbit_bounds = [[-57.5,-140], [52.5,140]]
     L.imageOverlay("orbit_lines.png", orbit_bounds).addTo(map);
 
-    // map.on('zoomend', function() {
-    //     var currentZoom = map.getZoom();
-    //     console.log(currentZoom);
-    // });
-
-	// const popup = L.popup()
-	// 	.setLatLng([0,0])
-
-	// function onMapClick(e) {
-	// 	popup
-	// 		.setLatLng(e.latlng)
-	// 		.setContent("(" + e.latlng.lat.toFixed(0) + ", " + e.latlng.lng.toFixed(0) + ")")
-	// 		.openOn(map);
-    //     // marker.setLatLng(e.latlng)
-	// }
-
-	// map.on('click', onMapClick);
-    retrieveStarData("data.json");
-    retrieveStarData("customSystems.json");
+    retrieveStarData("testData.json", "div-icon");
+    retrieveStarData("customSystems.json", "div-icon-custom");
 
 </script>
 </body>

@@ -30,15 +30,21 @@
         "Map": "default_star.png"
     },
     {
-        "System": "Raxxla",
+        "System": "",
         "x": 20,
         "y": 20,
         "Map": "default_star.png"
     },
     {
-        "System": "",
+        "System": "Laedla",
         "x": -20,
         "y": 20,
         "Map": ""
-    } 
+    }, 
+    {
+        "System": "Beagle Point",
+        "x": 4.3490957391255485,
+        "y": 59.18802789041497,
+        "Map": ""
+    }
 ]
